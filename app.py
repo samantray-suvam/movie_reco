@@ -17,39 +17,41 @@ QLOO_BASE_URL = 'https://hackathon.api.qloo.com'
 @app.route('/api/search', methods=['GET'])
 def search():
     query = request.args.get('q', '')
+    if not query:
+        return jsonify({'error': 'No search query provided'}), 400
+
     try:
-        # QLOO API implementation
         headers = {
             'Authorization': f'Bearer {QLOO_API_KEY}',
             'Content-Type': 'application/json'
         }
-        
-        # Make two separate requests for movies and books
+
+        # Search for movies
         movie_response = requests.post(
-            f'{QLOO_BASE_URL}/v1/recommendations/get_similar_items',
+            f'{QLOO_BASE_URL}/recommendations/get_similar_items',
             headers=headers,
             json={
                 "item": {
                     "type": "MOVIE",
                     "title": query
                 },
-                "limit": 5
+                "limit": 6
             }
         )
-        
+
+        # Search for books
         book_response = requests.post(
-            f'{QLOO_BASE_URL}/v1/recommendations/get_similar_items',
+            f'{QLOO_BASE_URL}/recommendations/get_similar_items',
             headers=headers,
             json={
                 "item": {
                     "type": "BOOK",
                     "title": query
                 },
-                "limit": 5
+                "limit": 6
             }
         )
 
-        # Combine and format results
         results = {
             'movies': movie_response.json().get('recommendations', []),
             'books': book_response.json().get('recommendations', [])
